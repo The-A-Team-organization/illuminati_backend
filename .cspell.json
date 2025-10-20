@@ -1,5 +1,20 @@
 {
   "version": "0.2",
   "language": "en",
-  "words": []
+  "words": [
+    "Andreiko",
+    "ASGI",
+    "authentific",
+    "asgi",
+    "asgiref",
+    "djangorestframework",
+    "illuminaties",
+    "liquibase",
+    "mysqlclient",
+    "psycopg",
+    "sqlparse",
+    "Taras",
+    "tzdata",
+    "VARCHAR"
+  ]
 }

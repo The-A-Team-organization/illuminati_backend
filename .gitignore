@@ -1,5 +1,7 @@
 **/*.tfstate
 
+.idea/
+
 
 api/__pycache__/
 core/__pycache__/
