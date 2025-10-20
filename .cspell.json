@@ -4,10 +4,17 @@
   "words": [
     "Andreiko",
     "ASGI",
+    "Taras",
+    "VARCHAR",
     "authentific",
     "asgi",
     "asgiref",
+    "checkpw",
+    "corsheaders",
     "djangorestframework",
+    "dotenv",
+    "gensalt",
+    "hashpw",
     "illuminaties",
     "libmysqlclient",
     "libpq",
@@ -17,8 +24,6 @@
     "psycopg",
     "runserver",
     "sqlparse",
-    "Taras",
-    "tzdata",
-    "VARCHAR"
+    "tzdata"
   ]
 }
