@@ -1,1 +1,14 @@
 **/*.tfstate
+
+
+api/__pycache__/
+core/__pycache__/
+core/settings/__pycache__/
+apps/authentific/__pycache__/
+apps/users/__pycache__/
+tests/users/__pycache__/
+tests/authentific/__pycache__/
+
+
+
+venv/
