@@ -4,6 +4,7 @@ from rest_framework import status
 from .serializers import RegisterSerializer, LoginSerializer
 from .services import register_user, authenticate_user
 from core.settings import base
+from .passwords import check_password
 
 
 class RegisterView(APIView):
@@ -68,7 +69,7 @@ class EntryView(APIView):
                 status = status.HTTP_400_BAD_REQUEST
             )
 
-        if secret_password == base.SECRET_ENTRY_PASSWORD:
+        if check_password(secret_password, base.SECRET_ENTRY_PASSWORD):
             return Response(
                 {"status": "OK", "notification": "Entry verified"},
                 status = status.HTTP_200_OK
