@@ -10,7 +10,9 @@ apps/authentific/__pycache__/
 apps/users/__pycache__/
 tests/users/__pycache__/
 tests/authentific/__pycache__/
-
+enums/__pycache__/
 
 
 venv/
+
+.env
