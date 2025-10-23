@@ -21,7 +21,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script{
-                    docker.withRegistry("https://${FRONTEND_ECR_LINK}") {
+                    docker.withRegistry("https://${BACK_ECR_LINK}") {
                         app.push("${env.BUILD_NUMBER}")
                         app.push("latest")
                     }
