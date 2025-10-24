@@ -10,3 +10,12 @@ class User(models.Model):
     class Meta:
         db_table = 'users'
         managed = False
+
+
+class InvitedUser(models.Model):
+    id = models.BigAutoField(primary_key = True)
+    email = models.TextField(unique = True)
+
+    class Meta:
+        db_table = 'invited_users'
+        managed = False
