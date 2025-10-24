@@ -10,3 +10,4 @@ class Config:
     DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD", "")
     DATABASE_PORT = os.getenv("DATABASE_PORT", "3306")
     SECRET_KEY = os.getenv("SECRET_KEY", "")
+    SECRET_ENTRY_PASSWORD = os.getenv("SECRET_ENTRY_PASSWORD", "")
