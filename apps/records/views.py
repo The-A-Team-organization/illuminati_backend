@@ -8,7 +8,7 @@ from .services import get_all_records
 
 class RecordListView(APIView):
     def get(self, request):
-        records = get_all_users()
+        records = get_all_records()
         serializer = RecordSerializer(records, many=True)
 
         return Response(

@@ -12,7 +12,7 @@ class RecordSerializer(serializers.ModelSerializer):
             "y",
             "type",
             "description",
-            "image_path",
+            "img_path",
             "additional_info",
         ]
 
