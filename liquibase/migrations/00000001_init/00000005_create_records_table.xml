@@ -16,11 +16,11 @@
                 <constraints nullable="false"/>
             </column>
 
-            <column name="x" type="TEXT">
+            <column name="x" type="FLOAT">
                 <constraints nullable="false"/>
             </column>
 
-            <column name="y" type="TEXT">
+            <column name="y" type="FLOAT">
                 <constraints nullable="false"/>
             </column>
 
