@@ -13,7 +13,7 @@
             <column name="y" valueNumeric="24.0297"/>
             <column name="type" value="UFO"/>
             <column name="description" value="UFO near Lviv center"/>
-            <column name="image_path" value="temporary path"/>
+            <column name="img_path" value="temporary path"/>
             <column name="additional_info" value="Generated via Liquibase"/>
         </insert>
 
@@ -23,7 +23,7 @@
             <column name="y" valueNumeric="24.0325"/>
             <column name="type" value="BIGFOOT"/>
             <column name="description" value="BIG FOOT"/>
-            <column name="image_path" value="temporary path"/>
+            <column name="img_path" value="temporary path"/>
             <column name="additional_info" value="Generated via Liquibase"/>
         </insert>
 
