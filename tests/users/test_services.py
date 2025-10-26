@@ -1,6 +1,6 @@
 from unittest.mock import patch
 from django.test import TestCase
-from apps.users.services import get_all_users
+from apps.users.services import get_all_users, get_all_invited_users
 
 
 class GetAllUsersTest(TestCase):
@@ -8,7 +8,7 @@ class GetAllUsersTest(TestCase):
     def test_get_all_users_calls_all(self, mock_objects):
         mock_queryset = mock_objects.all.return_value
 
-        result = get_all_records()
+        result = get_all_users()
 
         mock_objects.all.assert_called_once()
         self.assertEqual(result, mock_queryset)
@@ -17,7 +17,7 @@ class GetAllUsersTest(TestCase):
     def test_get_all_invited_users_calls_all(self, mock_objects):
         mock_queryset = mock_objects.all.return_value
 
-        result = get_all_records()
+        result = get_all_invited_users()
 
         mock_objects.all.assert_called_once()
         self.assertEqual(result, mock_queryset)
