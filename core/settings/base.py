@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     "apps.authentific",
     "apps.users",
     "apps.records",
+    "tests",
 ]
 
 MIDDLEWARE = [
@@ -85,7 +86,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-DEFAULT_AUTO_FIELD = "django.db.enums.BigAutoField"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [],
@@ -93,4 +94,3 @@ REST_FRAMEWORK = {
 }
 
 SECRET_ENTRY_PASSWORD = Config.SECRET_ENTRY_PASSWORD
-
