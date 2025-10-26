@@ -26,6 +26,8 @@
     "psycopg",
     "runserver",
     "sqlparse",
-    "tzdata"
+    "tzdata",
+    "envlist",
+    "skipsdist"
   ]
 }
