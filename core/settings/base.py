@@ -20,6 +20,7 @@ INSTALLED_APPS = [
 
     'apps.authentific',
     'apps.users',
+    'apps.snapshot'
 ]
 
 MIDDLEWARE = [
