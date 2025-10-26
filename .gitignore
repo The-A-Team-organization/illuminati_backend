@@ -1,5 +1,9 @@
 **/*.tfstate
 
+__pycache__/
+*/__pycache__/
+__pycache__/ ignores any fold
+
 .idea/
 
 

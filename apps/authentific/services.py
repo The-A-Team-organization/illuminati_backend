@@ -2,8 +2,9 @@ from .models import User, InvitedUser
 from .passwords import hash_password, check_password
 import jwt
 from django.conf import settings
-from datetime import datetime, timedelta
+from datetime import timedelta
 from enums.roles import Role
+from django.utils import timezone
 
 
 def generate_jwt(user, lifetime_minutes=60):
@@ -12,7 +13,7 @@ def generate_jwt(user, lifetime_minutes=60):
         "username": user.username,
         "email": user.email,
         "role": user.role,
-        "exp": datetime.utcnow() + timedelta(minutes=lifetime_minutes),
+        "exp": timezone.now() + timedelta(minutes=lifetime_minutes),
     }
 
     token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
