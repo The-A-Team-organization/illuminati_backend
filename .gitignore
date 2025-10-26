@@ -21,3 +21,5 @@ apps/entry_password/__pycache__/
 venv/
 
 .env
+
+.tox

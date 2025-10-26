@@ -1,7 +1,4 @@
 from core.settings import base
-import django
-
-django.setup()
 
 INSTALLED_APPS = base.INSTALLED_APPS
 MIDDLEWARE = base.MIDDLEWARE
