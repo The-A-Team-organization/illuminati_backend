@@ -13,6 +13,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install tox and any other packages
+        run: pip install tox
+
       - name: Run tox
         run: tox -e py
 
