@@ -16,6 +16,7 @@ tests/users/__pycache__/
 tests/authentific/__pycache__/
 enums/__pycache__/
 apps/entry_password/__pycache__/
+apps/votes/__pycache__/
 
 
 venv/
@@ -25,3 +26,5 @@ venv/
 .tox/
 
 .env
+
+.coverage

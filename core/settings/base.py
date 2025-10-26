@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = Config.SECRET_KEY
 DEBUG = True
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -21,7 +21,9 @@ INSTALLED_APPS = [
     'apps.authentific',
     'apps.users',
     'apps.snapshot',
-    'apps.records'
+    'apps.records',
+    'apps.votes',
+    'tests',
 ]
 
 MIDDLEWARE = [
