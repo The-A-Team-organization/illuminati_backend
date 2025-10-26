@@ -4,11 +4,12 @@ from rest_framework import status
 from django.http import HttpResponse
 from .models import Record
 from .serializers import RecordSerializer
+from .services import get_all_records
 import json
 
 class RecordsBackupView(APIView):
     def get(self, request):
-        records = Record.objects.all()
+        records = get_all_records()
 
         if not records.exists():
             return Response(

@@ -1,6 +1,5 @@
-from core.settings import base
+from .models import Record
 
 
-def change_entry_password(new_word):
-    base.SECRET_ENTRY_PASSWORD = new_word
-
+def get_all_records():
+    return Record.objects.all()
