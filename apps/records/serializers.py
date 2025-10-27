@@ -3,6 +3,8 @@ from .models import Record
 
 
 class RecordSerializer(serializers.ModelSerializer):
+    img_path = serializers.CharField(read_only=True)
+
     class Meta:
         model = Record
         fields = [
