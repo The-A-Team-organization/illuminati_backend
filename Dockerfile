@@ -11,19 +11,12 @@ RUN apt-get update && apt-get install -y \
 
 
 COPY requirements.txt /app/
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+
+RUN pip install --upgrade pip \
+    pip install -r requirements.txt
 
 
 COPY . /app/
-
-ENV DATABASE_HOST=${DATABASE_HOST}
-ENV DATABASE_NAME=${DATABASE_NAME}
-ENV DATABASE_USER=${DATABASE_USER}
-ENV DATABASE_PASSWORD=${DATABASE_PASSWORD}
-ENV DATABASE_PORT=${DATABASE_PORT}
-ENV SECRET_KEY=${SECRET_KEY}
-
 
 EXPOSE 8000
 

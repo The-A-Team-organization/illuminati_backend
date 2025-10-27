@@ -13,12 +13,21 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install tox and any other packages
+        run: pip install tox
+
+      - name: Run tox
+        run: tox -e py
+
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v6
         continue-on-error: false
         with:
           args: >-
             -Dsonar.projectKey=illuminati_backend
+            -Dsonar.sources=.
+            -Dsonar.coverage.exclusions=**/urls.py,tests/**,core/**,enums/**,api/**,manage.py
+            -Dsonar.python.coverage.reportPaths=coverage.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
