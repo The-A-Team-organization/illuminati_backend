@@ -3,6 +3,6 @@ from .views import RecordsBackupView
 from .views import RecordsRestoreView
 
 urlpatterns = [
-    path('download/', RecordsBackupView.as_view(), name='records_backup'),
-    path('upload/', RecordsRestoreView.as_view(), name='records_restore'),
+    path('download/', RecordsBackupView.as_view(), name='records_download'),
+    path('upload/', RecordsRestoreView.as_view(), name='records_upload'),
 ]
