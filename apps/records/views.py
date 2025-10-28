@@ -69,3 +69,19 @@ class RecordCreateView(APIView):
             },
             status=status.HTTP_201_CREATED,
         )
+
+
+class RecordDetailView(APIView):
+    def get(self, request, record_id):
+        record = get_record_by_id(record_id)
+        if not record:
+            return Response(
+                {"status": "ERROR", "notification": "Record not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = RecordSerializer(record)
+        return Response(
+            {"status": "OK", "notification": "Record details", "data": serializer.data},
+            status=status.HTTP_200_OK,
+        )
