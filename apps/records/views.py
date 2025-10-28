@@ -2,12 +2,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import RecordSerializer
-from .services import get_all_records, create_record
+from .services import get_all_records, create_record, get_record_by_id
 import os
 import uuid
 from django.conf import settings
-
-from apps.records import serializers
 
 
 class RecordListView(APIView):
@@ -52,12 +50,12 @@ class RecordCreateView(APIView):
                 dest.write(chunk)
 
         record_data = serializer.validated_data
-        record_data["img_path"] = f"/images/{unique_name}"
+        record_data["img_path"] = request.build_absolute_uri(
+            f"{settings.MEDIA_URL}{unique_name}"
+        )
 
-        record_data["description"] = record_data.get(
-            "description") or "No description"
-        record_data["additional_info"] = record_data.get(
-            "additional_info") or "N/A"
+        record_data["description"] = record_data.get("description") or "No description"
+        record_data["additional_info"] = record_data.get("additional_info") or "N/A"
 
         record = create_record(record_data)
 
