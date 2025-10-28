@@ -69,7 +69,8 @@ class RecordCreateViewTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["status"], "OK")
-        self.assertEqual(response.data["notification"], "Record created successfully")
+        self.assertEqual(
+            response.data["notification"], "Record created successfully")
         mock_create_record.assert_called_once()
 
     def test_create_record_missing_image(self):
@@ -99,3 +100,39 @@ class RecordCreateViewTest(APITestCase):
 
         self.assertEqual(response.data["status"], "ERROR")
         self.assertIn("Invalid data", response.data["notification"])
+
+
+class RecordDetailViewTest(APITestCase):
+    @patch("apps.records.views.get_record_by_id")
+    def test_get_record_success(self, mock_get_record_by_id):
+        mock_record = MagicMock()
+        mock_record.id = 1
+        mock_record.name = "R1"
+        mock_record.x = 1.0
+        mock_record.y = 2.0
+        mock_record.type = "UFO"
+        mock_record.description = "desc"
+        mock_record.img_path = "/images/test.png"
+        mock_record.additional_info = "info"
+
+        mock_get_record_by_id.return_value = mock_record
+
+        url = reverse("records-detail", args=[1])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "OK")
+        self.assertEqual(response.data["notification"], "Record details")
+        mock_get_record_by_id.assert_called_once_with(1)
+
+    @patch("apps.records.views.get_record_by_id")
+    def test_get_record_not_found(self, mock_get_record_by_id):
+        mock_get_record_by_id.return_value = None
+
+        url = reverse("records-detail", args=[99])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data["status"], "ERROR")
+        self.assertIn("Record not found", response.data["notification"])
+        mock_get_record_by_id.assert_called_once_with(99)

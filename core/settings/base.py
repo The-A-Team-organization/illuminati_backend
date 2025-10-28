@@ -6,24 +6,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = Config.SECRET_KEY
 DEBUG = True
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "shared", "images")
+
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    'rest_framework',
-
-    'apps.authentific',
-    'apps.users',
-    'apps.snapshot',
-    'apps.records',
-    'apps.votes',
-    'tests',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "rest_framework",
+    "apps.authentific",
+    "apps.users",
+    "apps.snapshot",
+    "apps.records",
+    "apps.votes",
+    "tests",
 ]
 
 MIDDLEWARE = [

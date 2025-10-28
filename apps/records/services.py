@@ -8,3 +8,8 @@ def get_all_records():
 def create_record(data):
     record = Record.objects.create(**data)
     return record
+
+
+def get_record_by_id(record_id):
+    record = Record.objects.get(id=record_id)
+    return record

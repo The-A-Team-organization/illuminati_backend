@@ -34,3 +34,15 @@ class CreateRecordTest(TestCase):
 
         mock_create.assert_called_once_with(**data)
         self.assertEqual(result, mock_record)
+
+
+class GetRecordByIdTest(TestCase):
+    @patch("apps.records.services.Record.objects.get")
+    def test_get_record_by_id_calls_get_with_correct_id(self, mock_get):
+        mock_record = mock_get.return_value
+        from apps.records.services import get_record_by_id
+
+        result = get_record_by_id(5)
+
+        mock_get.assert_called_once_with(id=5)
+        self.assertEqual(result, mock_record)
