@@ -69,8 +69,7 @@ class RecordCreateViewTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["status"], "OK")
-        self.assertEqual(
-            response.data["notification"], "Record created successfully")
+        self.assertEqual(response.data["notification"], "Record created successfully")
         mock_create_record.assert_called_once()
 
     def test_create_record_missing_image(self):
@@ -88,7 +87,7 @@ class RecordCreateViewTest(APITestCase):
         response = self.client.post(url, data)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Invalid", str(response.data))
+        self.assertIn("Image is required", str(response.data))
 
     def test_create_record_invalid_data(self):
         settings.BASE_DIR = tempfile.gettempdir()
