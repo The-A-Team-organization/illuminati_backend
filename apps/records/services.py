@@ -13,3 +13,7 @@ def create_record(data):
 def get_record_by_id(record_id):
     record = Record.objects.get(id=record_id)
     return record
+
+
+def erase_all_records():
+    Record.objects.all().delete()
