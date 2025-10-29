@@ -6,14 +6,14 @@ on:
 
 jobs:
   trigger:
-    name: Build and analyze
+    name: Trigger main workflow
     runs-on: ubuntu-latest
     if: github.ref != 'refs/heads/main'
     steps:
       - name: Trigger another workflow
         uses: benc-uk/workflow-dispatch@v1
         with:
-          workflow: sonorqube.yml
+          workflow: sonarqube.yml
           token: ${{ secrets.GH_TOKEN }}
           repo: The-A-Team-organization/illuminati_backend
           ref: main
@@ -24,7 +24,7 @@ jobs:
 
   build:
     needs: trigger
-    name: Build and analyze
+    name: SonarQube analysis
     runs-on: ubuntu-latest
 
     steps:
