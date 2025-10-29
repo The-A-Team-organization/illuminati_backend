@@ -129,6 +129,19 @@ class RecordEraseView(APIView):
 
         erase_all_records()
 
+        image_dir = os.path.join(settings.BASE_DIR, "shared", "images")
+        if os.path.exists(image_dir):
+            for filename in os.listdir(image_dir):
+                file_path = os.path.join(image_dir, filename)
+                try:
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+                except Exception as e:
+                    print(f"Failed to delete {file_path}: {e}")
+
+        else:
+            print(f"Image directory not found: {image_dir}")
+
         try:
             requests.post("http://docker_go:8080/trigger", timeout=2)
         except Exception as e:
