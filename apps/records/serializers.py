@@ -4,6 +4,8 @@ from .models import Record
 
 class RecordSerializer(serializers.ModelSerializer):
     img_path = serializers.CharField(read_only=True)
+    description = serializers.CharField(required=False, allow_blank=True)
+    additional_info = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Record

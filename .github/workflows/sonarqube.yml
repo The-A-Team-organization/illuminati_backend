@@ -1,9 +1,29 @@
 name: sonarqube
 
-on: push
+on:
+  workflow_dispatch:
+  push:
 
 jobs:
+  trigger:
+    name: Build and analyze
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
+    steps:
+      - name: Trigger another workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: sonorqube.yml
+          token: ${{ secrets.GH_TOKEN }}
+          repo: The-A-Team-organization/illuminati_backend
+          ref: main
+      - name: Wait 1m
+        uses: GuillaumeFalourd/wait-sleep-action@v1
+        with:
+          time: "1m"
+
   build:
+    needs: trigger
     name: Build and analyze
     runs-on: ubuntu-latest
 

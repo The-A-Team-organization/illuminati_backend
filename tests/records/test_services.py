@@ -1,6 +1,6 @@
 from unittest.mock import patch
 from django.test import TestCase
-from apps.records.services import get_all_records
+from apps.records.services import get_all_records, erase_all_records
 
 
 class GetAllRecordsTest(TestCase):
@@ -46,3 +46,12 @@ class GetRecordByIdTest(TestCase):
 
         mock_get.assert_called_once_with(id=5)
         self.assertEqual(result, mock_record)
+
+
+class EraseAllRecordsTest(TestCase):
+    @patch("apps.records.services.Record.objects")
+    def test_erase_all_records_deletes_all(self, mock_objects):
+        erase_all_records()
+
+        mock_objects.all.assert_called_once()
+        mock_objects.all.return_value.delete.assert_called_once()
