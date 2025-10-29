@@ -5,6 +5,7 @@ from rest_framework.test import APITestCase
 from io import BytesIO
 from django.conf import settings
 import tempfile
+import jwt
 
 
 class RecordListViewTest(APITestCase):
@@ -135,3 +136,50 @@ class RecordDetailViewTest(APITestCase):
         self.assertEqual(response.data["status"], "ERROR")
         self.assertIn("Record not found", response.data["notification"])
         mock_get_record_by_id.assert_called_once_with(99)
+
+
+class RecordEraseViewTest(APITestCase):
+    def setUp(self):
+        self.url = reverse("records-erase")
+        self.token = jwt.encode(
+            {"role": "GoldMason"}, settings.SECRET_KEY, algorithm="HS256"
+        )
+
+    @patch("apps.records.views.erase_all_records")
+    def test_erase_records_success(self, mock_erase_all):
+        response = self.client.post(self.url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "OK")
+        self.assertIn("All records erased", response.data["notification"])
+        mock_erase_all.assert_called_once()
+
+    def test_erase_records_missing_token(self):
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn("Missing or invalid token", response.data["notification"])
+
+    def test_erase_records_invalid_token(self):
+        response = self.client.post(self.url, HTTP_AUTHORIZATION="Bearer invalidtoken")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn("Invalid token", response.data["notification"])
+
+    def test_erase_records_expired_token(self):
+        expired_token = jwt.encode(
+            {"role": "GoldMason", "exp": 0},
+            settings.SECRET_KEY,
+            algorithm="HS256",
+        )
+        response = self.client.post(
+            self.url, HTTP_AUTHORIZATION=f"Bearer {expired_token}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertIn("Token expired", response.data["notification"])
+
+    def test_erase_records_forbidden_role(self):
+        token = jwt.encode(
+            {"role": "WithoutRole"}, settings.SECRET_KEY, algorithm="HS256"
+        )
+        response = self.client.post(self.url, HTTP_AUTHORIZATION=f"Bearer {token}")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("unauthorized", response.data["notification"].lower())
