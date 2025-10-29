@@ -61,8 +61,10 @@ class RecordCreateView(APIView):
             f"{settings.MEDIA_URL}{unique_name}"
         )
 
-        record_data["description"] = record_data.get("description") or "No description"
-        record_data["additional_info"] = record_data.get("additional_info") or "N/A"
+        record_data["description"] = record_data.get(
+            "description") or "No description"
+        record_data["additional_info"] = record_data.get(
+            "additional_info") or "N/A"
 
         record = create_record(record_data)
 
@@ -104,7 +106,8 @@ class RecordEraseView(APIView):
         token = auth_header.split(" ")[1]
 
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            payload = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=["HS256"])
         except jwt.ExpiredSignatureError:
             return Response(
                 {"status": "ERROR", "notification": "Token expired"},
@@ -127,7 +130,7 @@ class RecordEraseView(APIView):
         erase_all_records()
 
         try:
-            requests.post("http://localhost:8080/trigger", timeout=2)
+            requests.post("http://docker_go:8080/trigger", timeout=2)
         except Exception as e:
             print("Trigger failed:", e)
 
