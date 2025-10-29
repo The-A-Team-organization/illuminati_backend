@@ -2,10 +2,17 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import RecordSerializer
-from .services import get_all_records, create_record, get_record_by_id
+from .services import (
+    get_all_records,
+    create_record,
+    get_record_by_id,
+    erase_all_records,
+)
 import os
 import uuid
 from django.conf import settings
+import jwt
+import requests
 
 
 class RecordListView(APIView):
@@ -81,5 +88,50 @@ class RecordDetailView(APIView):
         serializer = RecordSerializer(record)
         return Response(
             {"status": "OK", "notification": "Record details", "data": serializer.data},
+            status=status.HTTP_200_OK,
+        )
+
+
+class RecordEraseView(APIView):
+    def post(self, request):
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            return Response(
+                {"status": "ERROR", "notification": "Missing or invalid token"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        token = auth_header.split(" ")[1]
+
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            return Response(
+                {"status": "ERROR", "notification": "Token expired"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        except jwt.InvalidTokenError:
+            return Response(
+                {"status": "ERROR", "notification": "Invalid token"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        role = payload.get("role")
+
+        if role not in {"GoldMason", "Architect"}:
+            return Response(
+                {"status": "ERROR", "notification": "Unauthorized"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        erase_all_records()
+
+        try:
+            requests.post("http://localhost:8080/trigger", timeout=2)
+        except Exception as e:
+            print("Trigger failed:", e)
+
+        return Response(
+            {"status": "OK", "notification": "All records erased."},
             status=status.HTTP_200_OK,
         )
