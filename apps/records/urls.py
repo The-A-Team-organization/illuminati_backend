@@ -7,4 +7,5 @@ urlpatterns = [
     path("all", RecordListView.as_view(), name="records-all"),
     path("create", RecordCreateView.as_view(), name="records-create"),
     path("<int:record_id>", RecordDetailView.as_view(), name="records-detail"),
+    path("erase", RecordEraseView.as_view(), name="records-erase"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
