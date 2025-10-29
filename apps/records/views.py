@@ -140,7 +140,7 @@ class RecordEraseView(APIView):
             print(f"Image directory not found: {image_dir}")
 
         try:
-            requests.post("http://docker_go:8080/new-word", timeout=2)
+            requests.post("https://docker_go:8080/new-word", timeout=2)
         except Exception as e:
             print("Trigger failed:", e)
 
