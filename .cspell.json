@@ -19,6 +19,7 @@
     "gensalt",
     "hashpw",
     "illuminaties",
+    "invalidtoken",
     "libmysqlclient",
     "libpq",
     "liquibase",
