@@ -8,9 +8,9 @@ jobs:
   trigger:
     name: Trigger main workflow
     runs-on: ubuntu-latest
-    if: github.ref != 'refs/heads/main'
     steps:
       - name: Trigger another workflow
+        if: github.ref != 'refs/heads/main'
         uses: benc-uk/workflow-dispatch@v1
         with:
           workflow: sonarqube.yml
@@ -18,9 +18,12 @@ jobs:
           repo: The-A-Team-organization/illuminati_backend
           ref: main
       - name: Wait 1m
+        if: github.ref != 'refs/heads/main'
         uses: GuillaumeFalourd/wait-sleep-action@v1
         with:
           time: "1m"
+      - name: Success
+        run: echo Success
 
   build:
     needs: trigger
