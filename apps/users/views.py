@@ -22,13 +22,14 @@ class UsersListView(APIView):
                     "notification": "All users",
                     "data": serializer.data
                 },
-                status=status.HTTP_200_OK
+                status = status.HTTP_200_OK
             )
 
         except PermissionDenied:
+
             return Response(
                 {"status": "FORBIDDEN", "notification": "Access denied"},
-                status=status.HTTP_403_FORBIDDEN
+                status = status.HTTP_403_FORBIDDEN
             )
 
 
@@ -69,5 +70,5 @@ class EmailView(APIView):
                 ]
             }
 
-        return Response(response, status=status.HTTP_200_OK)
+        return Response(response, status = status.HTTP_200_OK)
 
