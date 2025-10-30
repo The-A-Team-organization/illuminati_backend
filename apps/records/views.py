@@ -63,10 +63,8 @@ class RecordCreateView(APIView):
             f"{settings.MEDIA_URL}{unique_name}"
         )
 
-        record_data["description"] = record_data.get(
-            "description") or "No description"
-        record_data["additional_info"] = record_data.get(
-            "additional_info") or "N/A"
+        record_data["description"] = record_data.get("description") or "No description"
+        record_data["additional_info"] = record_data.get("additional_info") or "N/A"
 
         record = create_record(record_data)
 
@@ -87,11 +85,9 @@ class RecordDetailView(APIView):
         if auth_header.startswith("Bearer "):
             token = auth_header.split(" ")[1]
             try:
-                payload = jwt.decode(
-                    token, settings.SECRET_KEY, algorithms=["HS256"])
+                payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
                 user_id = (
-                    payload.get("id") or payload.get(
-                        "user_id") or payload.get("sub")
+                    payload.get("id") or payload.get("user_id") or payload.get("sub")
                 )
             except Exception:
                 user_id = None
@@ -109,6 +105,98 @@ class RecordDetailView(APIView):
         )
 
 
+class LikeRecordView(APIView):
+    def post(self, request, record_id):
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            return Response(
+                {"status": "ERROR", "notification": "Missing or invalid token"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        token = auth_header.split(" ")[1]
+
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            return Response(
+                {"status": "ERROR", "notification": "Token expired"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        except jwt.InvalidTokenError:
+            return Response(
+                {"status": "ERROR", "notification": "Invalid token"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        user_id = payload.get("id")
+        if not user_id:
+            return Response(
+                {"status": "ERROR", "notification": "Invalid token (no user id)"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        if not get_record_by_id(record_id):
+            return Response(
+                {"status": "ERROR", "notification": "Record not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        result = like_record(user_id, record_id)
+        if result is None:
+            return Response(
+                {"status": "ERROR", "notification": "Record not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response(
+            {"status": "OK", "notification": "Record liked", "data": result},
+            status=status.HTTP_200_OK,
+        )
+
+
+class UnlikeRecordView(APIView):
+    def post(self, request, record_id):
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            return Response(
+                {"status": "ERROR", "notification": "Missing or invalid token"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        token = auth_header.split(" ")[1]
+
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            return Response(
+                {"status": "ERROR", "notification": "Token expired"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        except jwt.InvalidTokenError:
+            return Response(
+                {"status": "ERROR", "notification": "Invalid token"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        user_id = payload.get("id")
+        if not user_id:
+            return Response(
+                {"status": "ERROR", "notification": "Invalid token (no user id)"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        if not get_record_by_id(record_id):
+            return Response(
+                {"status": "ERROR", "notification": "Record not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        result = unlike_record(user_id, record_id)
+        return Response(
+            {"status": "OK", "notification": "Record unliked", "data": result},
+            status=status.HTTP_200_OK,
+        )
+
+
 class RecordEraseView(APIView):
     def post(self, request):
         auth_header = request.headers.get("Authorization", "")
@@ -121,8 +209,7 @@ class RecordEraseView(APIView):
         token = auth_header.split(" ")[1]
 
         try:
-            payload = jwt.decode(
-                token, settings.SECRET_KEY, algorithms=["HS256"])
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         except jwt.ExpiredSignatureError:
             return Response(
                 {"status": "ERROR", "notification": "Token expired"},
