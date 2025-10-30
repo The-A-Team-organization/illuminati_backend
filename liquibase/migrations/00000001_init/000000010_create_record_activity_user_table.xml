@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-    <changeSet id="0000009_create_record_activity_user_table" author="Oleh Bulka">
+    <changeSet id="00000010_create_record_activity_user_table" author="Oleh Bulka">
         <createTable tableName="record_activity_user">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false" primaryKeyName="pk_record_activity_user"/>
