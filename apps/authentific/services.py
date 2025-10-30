@@ -1,8 +1,8 @@
-from .models import User, InvitedUser
+from .models import User, InvitedUser, UserPromotion
 from .passwords import hash_password, check_password
 import jwt
 from django.conf import settings
-from datetime import timedelta
+from datetime import timedelta, datetime
 from enums.roles import Role
 from django.utils import timezone
 
@@ -13,15 +13,16 @@ def generate_jwt(user, lifetime_minutes=60):
         "username": user.username,
         "email": user.email,
         "role": user.role,
-        "exp": timezone.now() + timedelta(minutes=lifetime_minutes),
+        "inquisitor" : user.is_inquisitor,
+        "exp": timezone.now() + timedelta(minutes = lifetime_minutes),
     }
 
-    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm = "HS256")
     return token
 
 
-def register_user(username, email, password, role=None):
-    invited_record = InvitedUser.objects.filter(email=email).first()
+def register_user(username, email, password):
+    invited_record = InvitedUser.objects.filter(email = email).first()
 
     if not invited_record:
         raise ValueError("Email is not invited")
@@ -29,7 +30,13 @@ def register_user(username, email, password, role=None):
     hashed_password = hash_password(password)
 
     user = User.objects.create(
-        username=username, email=email, password=hashed_password, role=Role.MASON.value
+        username = username, email = email, password = hashed_password, role = Role.MASON.value
+    )
+
+    UserPromotion.objects.create(
+        user = user,
+        date_of_last_promotion = datetime.today(),
+        is_promote_requested = False,
     )
 
     invited_record.delete()
@@ -40,7 +47,7 @@ def register_user(username, email, password, role=None):
 
 def authenticate_user(email, password):
     try:
-        user = User.objects.get(email=email)
+        user = User.objects.get(email = email)
 
         if check_password(password, user.password):
             token = generate_jwt(user)

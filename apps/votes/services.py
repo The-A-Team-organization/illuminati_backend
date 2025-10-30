@@ -1,5 +1,7 @@
 from django.db import connection
 from .models import VoteTypes
+from datetime import datetime
+import time
 
 
 class VoteTableService:
@@ -116,6 +118,59 @@ class SendVoteService:
             with connection.cursor() as cursor:
                 cursor.execute(query, params)
 
+            return True
+
+        return False
+
+
+
+class PermissionService:
+
+    def __init__(self, user):
+        self.user = user
+
+
+    def has_promote_permission(self):
+        query = """
+                SELECT up.date_of_last_promotion, up.is_promote_requested
+                FROM users_promotions up
+                WHERE up.user_id = %s;
+                """
+
+        params = [self.user.id]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+
+        votes_dicts = [{'date': v[0], 'send_request': v[1]} for v in rows]
+
+        date = votes_dicts[0]['date']
+
+        today = date.today()
+        count_days = (today - date).days
+
+        if count_days > 0 and votes_dicts[0]['send_request'] is not True:
+            return True
+
+        return False
+
+
+    def has_ban_permission(self):
+        query = """
+            SELECT u.is_inquisitor
+            FROM users u 
+            WHERE u.id = %s;
+        """
+        params = [self.user.id]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+
+        is_inquisitor = rows[0][0]
+
+        if is_inquisitor:
             return True
 
         return False

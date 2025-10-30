@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from .permissions import HasValidToken
-from .services import VoteTableService,SendVoteService
+from .services import VoteTableService,SendVoteService, PermissionService
 from .serializers import VotesSerializer, SendVotesSerializer
 
 
@@ -70,4 +70,52 @@ class SendVote(APIView):
                 "notification": "Invalid request",
             },
             status=status.HTTP_409_CONFLICT
+        )
+
+
+
+class PromotionPermission(APIView):
+    permission_classes = [HasValidToken]
+
+    def get(self, request):
+        user = request.user
+        service = PermissionService(user)
+
+        if service.has_promote_permission():
+            return Response(
+                {
+                    "status": "OK"
+                },
+                status = status.HTTP_200_OK
+            )
+
+        return Response(
+            {
+                "status": "REFUSED",
+            },
+            status = status.HTTP_403_FORBIDDEN
+        )
+
+
+
+class BanPermission(APIView):
+    permission_classes = [HasValidToken]
+
+    def get(self, request):
+        user = request.user
+
+        service = PermissionService(user)
+
+        if service.has_ban_permission():
+            return Response(
+                {
+                    "status": "OK"
+                }
+            )
+
+        return Response(
+            {
+                "status": "REFUSED",
+            },
+            status = status.HTTP_403_FORBIDDEN
         )
