@@ -19,7 +19,6 @@ class GetAllRecordsTest(TestCase):
         record2 = Mock()
         record2.id = 2
         mock_record_objects.all.return_value = [record1, record2]
-        mock_values = mock_activity_user_objects.filter.return_value.values.return_value
         mock_activity_user_objects.filter.return_value.values.return_value.annotate.return_value = [
             {"record_id": 1, "count": 5},
             {"record_id": 2, "count": 7},
