@@ -10,6 +10,9 @@ class RecordActivitySerializer(serializers.ModelSerializer):
 
 
 class RecordSerializer(serializers.ModelSerializer):
+    likes_count = serializers.IntegerField(read_only=True, default=0)
+    liked_by_user = serializers.BooleanField(read_only=True, default=False)
+
     img_path = serializers.CharField(read_only=True)
     description = serializers.CharField(required=False, allow_blank=True)
     additional_info = serializers.CharField(required=False, allow_blank=True)
@@ -25,6 +28,8 @@ class RecordSerializer(serializers.ModelSerializer):
             "description",
             "img_path",
             "additional_info",
+            "likes_count",
+            "liked_by_user",
         ]
 
     def __init__(self, *args, **kwargs):
