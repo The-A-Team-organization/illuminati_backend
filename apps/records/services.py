@@ -63,7 +63,8 @@ def like_record(user_id, record_id):
 
 
 def unlike_record(user_id, record_id):
-    RecordActivityUser.objects.filter(user_id=user_id, record_id=record_id).delete()
+    RecordActivityUser.objects.filter(
+        user_id=user_id, record_id=record_id).delete()
     likes_count = RecordActivityUser.objects.filter(
         record_id=record_id, like_status=True
     ).count()
@@ -71,4 +72,5 @@ def unlike_record(user_id, record_id):
 
 
 def erase_all_records():
+    RecordActivityUser.objects.all().delete()
     Record.objects.all().delete()
