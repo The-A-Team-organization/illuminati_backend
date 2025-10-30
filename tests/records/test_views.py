@@ -123,7 +123,7 @@ class RecordDetailViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "OK")
         self.assertEqual(response.data["notification"], "Record details")
-        mock_get_record_by_id.assert_called_once_with(1)
+        mock_get_record_by_id.assert_called_once_with(1, user_id=None)
 
     @patch("apps.records.views.get_record_by_id")
     def test_get_record_not_found(self, mock_get_record_by_id):
@@ -135,7 +135,7 @@ class RecordDetailViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data["status"], "ERROR")
         self.assertIn("Record not found", response.data["notification"])
-        mock_get_record_by_id.assert_called_once_with(99)
+        mock_get_record_by_id.assert_called_once_with(99, user_id=None)
 
 
 class RecordEraseViewTest(APITestCase):
