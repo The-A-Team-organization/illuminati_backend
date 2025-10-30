@@ -14,3 +14,15 @@ class Record(models.Model):
     class Meta:
         db_table = "records"
         managed = False
+
+
+class RecordActivityUser(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    user_id = models.BigIntegerField()
+    record_id = models.BigIntegerField()
+    like_status = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = "record_activity_user"
+        managed = False
+        unique_together = (("user_id", "record_id"),)
