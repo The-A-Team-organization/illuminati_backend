@@ -50,7 +50,7 @@ jobs:
             -Dsonar.projectKey=illuminati_backend
             -Dsonar.sources=.
             -Dsonar.test=tests/**
-            -Dsonar.coverage.exclusions=**/urls.py,core/**,enums/**,api/**,manage.py
+            -Dsonar.coverage.exclusions=**/urls.py,tests/**,core/**,enums/**,api/**,manage.py
             -Dsonar.python.coverage.reportPaths=coverage.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

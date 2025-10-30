@@ -22,8 +22,8 @@ def save_new_entry_password(entry_password):
     return old_password
 
 def el_combinero():
-    pyld = get_new_entry_password()
-    serializer = EntryPasswordSerializer(data=pyld)
+    payload = get_new_entry_password()
+    serializer = EntryPasswordSerializer(data=payload)
     serializer.is_valid(raise_exception=True)
     save_new_entry_password(
        serializer.validated_data["entry_password"]
