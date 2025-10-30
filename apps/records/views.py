@@ -7,6 +7,8 @@ from .services import (
     create_record,
     get_record_by_id,
     erase_all_records,
+    like_record,
+    unlike_record,
 )
 import os
 import uuid
@@ -61,8 +63,10 @@ class RecordCreateView(APIView):
             f"{settings.MEDIA_URL}{unique_name}"
         )
 
-        record_data["description"] = record_data.get("description") or "No description"
-        record_data["additional_info"] = record_data.get("additional_info") or "N/A"
+        record_data["description"] = record_data.get(
+            "description") or "No description"
+        record_data["additional_info"] = record_data.get(
+            "additional_info") or "N/A"
 
         record = create_record(record_data)
 
@@ -78,7 +82,20 @@ class RecordCreateView(APIView):
 
 class RecordDetailView(APIView):
     def get(self, request, record_id):
-        record = get_record_by_id(record_id)
+        user_id = None
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+            try:
+                payload = jwt.decode(
+                    token, settings.SECRET_KEY, algorithms=["HS256"])
+                user_id = (
+                    payload.get("id") or payload.get(
+                        "user_id") or payload.get("sub")
+                )
+            except Exception:
+                user_id = None
+        record = get_record_by_id(record_id, user_id=user_id)
         if not record:
             return Response(
                 {"status": "ERROR", "notification": "Record not found"},
@@ -104,7 +121,8 @@ class RecordEraseView(APIView):
         token = auth_header.split(" ")[1]
 
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+            payload = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=["HS256"])
         except jwt.ExpiredSignatureError:
             return Response(
                 {"status": "ERROR", "notification": "Token expired"},
