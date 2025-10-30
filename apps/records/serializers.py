@@ -1,5 +1,12 @@
 from rest_framework import serializers
-from .models import Record
+from .models import Record, RecordActivityUser
+
+
+class RecordActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecordActivityUser
+        fields = ["id", "user_id", "record_id", "like_status"]
+        read_only_fields = ["id", "user_id", "record_id"]
 
 
 class RecordSerializer(serializers.ModelSerializer):
