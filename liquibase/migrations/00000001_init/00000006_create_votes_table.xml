@@ -19,11 +19,11 @@
                 <constraints nullable="false"/>
             </column>
 
-            <column name="amount_of_agreed" type="BIGINT">
+            <column name="amount_of_agreed" type="BIGINT" defaultValueNumeric = "0">
                 <constraints nullable="false"/>
             </column>
 
-            <column name="amount_of_disagreed" type="BIGINT">
+            <column name="amount_of_disagreed" type="BIGINT" defaultValueNumeric = "0">
                 <constraints nullable="false"/>
             </column>
 
