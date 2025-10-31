@@ -70,7 +70,8 @@ class RecordCreateViewTest(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["status"], "OK")
-        self.assertEqual(response.data["notification"], "Record created successfully")
+        self.assertEqual(
+            response.data["notification"], "Record created successfully")
         mock_create_record.assert_called_once()
 
     def test_create_record_missing_image(self):
@@ -123,7 +124,7 @@ class RecordDetailViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "OK")
         self.assertEqual(response.data["notification"], "Record details")
-        mock_get_record_by_id.assert_called_once_with(1)
+        mock_get_record_by_id.assert_called_once_with(1, user_id=None)
 
     @patch("apps.records.views.get_record_by_id")
     def test_get_record_not_found(self, mock_get_record_by_id):
@@ -135,7 +136,7 @@ class RecordDetailViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data["status"], "ERROR")
         self.assertIn("Record not found", response.data["notification"])
-        mock_get_record_by_id.assert_called_once_with(99)
+        mock_get_record_by_id.assert_called_once_with(99, user_id=None)
 
 
 class RecordEraseViewTest(APITestCase):
@@ -147,7 +148,8 @@ class RecordEraseViewTest(APITestCase):
 
     @patch("apps.records.views.erase_all_records")
     def test_erase_records_success(self, mock_erase_all):
-        response = self.client.post(self.url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        response = self.client.post(
+            self.url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "OK")
@@ -157,10 +159,12 @@ class RecordEraseViewTest(APITestCase):
     def test_erase_records_missing_token(self):
         response = self.client.post(self.url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertIn("Missing or invalid token", response.data["notification"])
+        self.assertIn("Missing or invalid token",
+                      response.data["notification"])
 
     def test_erase_records_invalid_token(self):
-        response = self.client.post(self.url, HTTP_AUTHORIZATION="Bearer invalidtoken")
+        response = self.client.post(
+            self.url, HTTP_AUTHORIZATION="Bearer invalidtoken")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertIn("Invalid token", response.data["notification"])
 
@@ -180,6 +184,65 @@ class RecordEraseViewTest(APITestCase):
         token = jwt.encode(
             {"role": "WithoutRole"}, settings.SECRET_KEY, algorithm="HS256"
         )
-        response = self.client.post(self.url, HTTP_AUTHORIZATION=f"Bearer {token}")
+        response = self.client.post(
+            self.url, HTTP_AUTHORIZATION=f"Bearer {token}")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn("unauthorized", response.data["notification"].lower())
+
+
+class LikeRecordViewTest(APITestCase):
+    def setUp(self):
+        self.url = reverse("records-like", args=[1])
+        self.token = jwt.encode(
+            {"id": 1}, settings.SECRET_KEY, algorithm="HS256")
+
+    @patch("apps.records.views.get_record_by_id")
+    @patch("apps.records.views.like_record")
+    def test_like_record_success(self, mock_like_record, mock_get_record_by_id):
+        mock_get_record_by_id.return_value = True
+        mock_like_record.return_value = {
+            "likes_count": 5, "liked_by_user": True}
+
+        response = self.client.post(
+            self.url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "OK")
+        self.assertIn("Record liked", response.data["notification"])
+
+    def test_like_record_missing_token(self):
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_like_record_invalid_token(self):
+        response = self.client.post(
+            self.url, HTTP_AUTHORIZATION="Bearer badtoken")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class UnlikeRecordViewTest(APITestCase):
+    def setUp(self):
+        self.url = reverse("records-unlike", args=[1])
+        self.token = jwt.encode(
+            {"id": 1}, settings.SECRET_KEY, algorithm="HS256")
+
+    @patch("apps.records.views.get_record_by_id")
+    @patch("apps.records.views.unlike_record")
+    def test_unlike_record_success(self, mock_unlike_record, mock_get_record_by_id):
+        mock_get_record_by_id.return_value = True
+        mock_unlike_record.return_value = {
+            "likes_count": 3, "liked_by_user": False}
+
+        response = self.client.post(
+            self.url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "OK")
+        self.assertIn("Record unliked", response.data["notification"])
+
+    def test_unlike_record_missing_token(self):
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_unlike_record_invalid_token(self):
+        response = self.client.post(
+            self.url, HTTP_AUTHORIZATION="Bearer invalid")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
