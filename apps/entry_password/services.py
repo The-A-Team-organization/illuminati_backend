@@ -1,25 +1,20 @@
 import requests, json
 from coverage.debug import info_header
-
 from .models import EntryPassword
-from .serializers import EntryPasswordSerializer
 from rest_framework.response import Response
+from django.db import connection
 from datetime import datetime
 import logging
 
-logging.basicConfig(filename="newfile.log",
-                    format='%(asctime)s %(message)s',
-                    filemode='w')
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logging.basicConfig(level=logging.INFO)
 
 def get_new_entry_password():
-    response = requests.get("https://docker_go:8080/new-word", timeout=2)
+    response = requests.get("http://docker_go:8080/new-word", timeout=2)
     payload = response.json()
     return payload
 
 
-def save_new_entry_password(entry_password):
+def save_new_entry_password():
     logging.info("Detected new changes for entry password")
     payload = get_new_entry_password()
     logging.info("New entry password received: %s", payload)
