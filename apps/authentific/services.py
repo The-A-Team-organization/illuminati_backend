@@ -53,5 +53,5 @@ def authenticate_user(email, password):
         return None, None
 
 def get_entry_pass():
-    old_password = EntryPassword.objects.filter().first()
-    return old_password.entry_password
+    entry_password = EntryPassword.objects.filter().first()
+    return entry_password.entry_password
