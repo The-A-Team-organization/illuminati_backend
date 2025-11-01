@@ -5,6 +5,7 @@ from django.conf import settings
 from datetime import timedelta
 from enums.roles import Role
 from django.utils import timezone
+from apps.entry_password.models import EntryPassword
 
 
 def generate_jwt(user, lifetime_minutes=60):
@@ -50,3 +51,7 @@ def authenticate_user(email, password):
 
     except User.DoesNotExist:
         return None, None
+
+def get_entry_pass():
+    old_password = EntryPassword.objects.filter().first()
+    return old_password.entry_password
