@@ -12,7 +12,7 @@
                 <constraints primaryKey="true" nullable="false" primaryKeyName="pk_vote_types_id"/>
             </column>
 
-            <column name="vote_type" type="ENUM('PROMOTE_TO_SILVER', 'PROMOTE_TO_GOLDEN', 'PROMOTE_TO_ARCHITECT')">
+            <column name="vote_type" type="ENUM('PROMOTE_TO_SILVER', 'PROMOTE_TO_GOLDEN', 'PROMOTE_TO_ARCHITECT', 'BAN_USER')">
                 <constraints nullable="false"/>
             </column>
 

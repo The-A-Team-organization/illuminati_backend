@@ -51,7 +51,7 @@ class VoteUsers(models.Model):
         managed = False
 
 
-class UserPromotion(models.Model):
+class UsersPromotions(models.Model):
     id = models.BigAutoField(primary_key = True)
 
     user = models.OneToOneField(
