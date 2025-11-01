@@ -5,6 +5,7 @@
     "Andreiko",
     "ASGI",
     "Bulka",
+    "CURDATE",
     "Oleh",
     "Oleg",
     "Taras",
@@ -12,6 +13,7 @@
     "authentific",
     "asgi",
     "asgiref",
+    "badtoken",
     "checkpw",
     "corsheaders",
     "djangorestframework",
@@ -33,6 +35,7 @@
     "runserver",
     "sqlparse",
     "tzdata",
+    "unliked",
     "envlist",
     "skipsdist"
   ]

@@ -10,7 +10,7 @@ from .passwords import check_password
 class RegisterView(APIView):
 
     def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
+        serializer = RegisterSerializer(data = request.data)
 
         if not serializer.is_valid():
 
@@ -35,6 +35,8 @@ class RegisterView(APIView):
                 status = status.HTTP_403_FORBIDDEN
             )
 
+
+
 class LoginView(APIView):
 
     def post(self, request):
@@ -56,6 +58,7 @@ class LoginView(APIView):
             {"status": "UNAUTHORIZED", "notification": "Invalid credentials"},
             status = status.HTTP_400_BAD_REQUEST
         )
+
 
 
 class EntryView(APIView):

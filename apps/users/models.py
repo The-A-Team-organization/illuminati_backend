@@ -6,6 +6,7 @@ class User(models.Model):
     email = models.TextField(unique = True)
     password = models.TextField()
     role = models.CharField(max_length = 20)
+    is_inquisitor = models.BooleanField(default = False)
 
     class Meta:
         db_table = 'users'

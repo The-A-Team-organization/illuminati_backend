@@ -49,3 +49,23 @@ class VoteUsers(models.Model):
     class Meta:
         db_table = 'vote_users'
         managed = False
+
+
+class UsersPromotions(models.Model):
+    id = models.BigAutoField(primary_key = True)
+
+    user = models.OneToOneField(
+        User,
+        on_delete = models.CASCADE,
+        db_column = 'user_id',
+        unique = True,
+        related_name = '+'
+    )
+
+    date_of_last_promotion = models.DateField()
+    is_promote_requested = models.BooleanField()
+
+
+    class Meta:
+        db_table = 'users_promotions'
+        managed = False
