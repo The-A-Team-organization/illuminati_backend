@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 def get_new_entry_password():
     response = requests.get("https://docker_go:8080/entry_password", timeout=2)
     payload = response.json()
-    logging.info("new payload: ", payload)
+    logging.info("new payload: %s", payload)
     return payload
 
 
