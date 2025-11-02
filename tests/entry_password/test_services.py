@@ -8,7 +8,7 @@ class GetNewEntryPassword(TestCase):
     def test_get_new_entry_password(self):
         httpretty.register_uri(
             httpretty.GET,
-            "https://docker_go:8080/new-word",
+            "http://docker_go:8080/entry_password"",
             body='{"entry_password": "value1"}'
         )
         json_data = get_new_entry_password()
