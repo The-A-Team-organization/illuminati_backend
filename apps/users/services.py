@@ -42,7 +42,7 @@ def invite_user(email: str):
     if User.objects.filter(email=email).exists():
         return {"status": "exists", "message": "User with this email already exists"}
 
-    invited_user, created = InvitedUser.objects.get_or_create(email=email)
+    _, created = InvitedUser.objects.get_or_create(email=email)
 
     if not created:
         return {"status": "invited", "message": "User already invited"}
