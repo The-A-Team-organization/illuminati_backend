@@ -11,6 +11,7 @@ from .services import (
     invite_user,
 )
 from .permissions import IsGoldMason, IsArchitect
+import requests
 
 
 class UsersListView(APIView):
@@ -80,6 +81,22 @@ class InviteView(APIView):
         result = invite_user(email)
 
         if result["status"] == "success":
+            payload = {
+                "topic": "Today's post: quick read",
+                "text": "Hello,\n\nToday's post is available at http://localhost:5173/. It's a short read you can open anytime. We'll deliver a single follow-up message to all subscribers later with a small update.\n\nThank you for subscribing.",
+                "target_emails": [email],
+            }
+            try:
+                response = requests.post(
+                    "http://docker_go:8080/send_letter",
+                    json=payload,
+                    timeout=3,
+                )
+                if response.status_code != 200:
+                    print(f"Mailer error: {response.text}")
+            except Exception as e:
+                print(f"Failed to send mail via Go service: {e}")
+
             return Response(
                 {"message": result["message"]}, status=status.HTTP_201_CREATED
             )
