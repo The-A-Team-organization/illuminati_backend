@@ -1,7 +1,7 @@
 from unittest.mock import patch, MagicMock
 from django.test import TestCase, RequestFactory
 from apps.votes.views import VotesTableView, SendVoteView, PromotionPermissionView, BanPermissionView, \
-UserPromoteView, UserBanView, CloseActiveExpiredVotesView
+    UserPromoteView, UserBanView, CloseActiveExpiredVotesView, InquisitorManagementView
 from rest_framework import status
 
 
@@ -19,7 +19,7 @@ class VoteTableViewTest(TestCase):
     @patch("apps.votes.services.VoteService.get_vote_role_raw", return_value = ["PROMOTE"])
     def test_get_votes_table(self, mock_role, mock_service, _):
         mock_service.return_value = [
-            {"id": 1, "name": "Vote1", "vote_type": "PROMOTE"}
+            {"id": 1, "name": "Vote1", "percent": 100}
         ]
 
         request = self.factory.get("/votes/")
@@ -30,6 +30,7 @@ class VoteTableViewTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "OK")
         mock_service.assert_called_once()
+
 
 
 class SendVoteViewTest(TestCase):
@@ -67,7 +68,7 @@ class SendVoteViewTest(TestCase):
         request = self.factory.post(
             "/votes/sendVote/",
             {"id": 1, "choice": "AGREE"},
-            content_type="application/json"
+            content_type = "application/json"
         )
         request.user = self.user
         view = SendVoteView.as_view()
@@ -80,7 +81,6 @@ class SendVoteViewTest(TestCase):
         mock_commit.assert_called_once()
 
 
-
     @patch("apps.votes.views.HasValidToken.has_permission", return_value = True)
     @patch("apps.votes.services.SendVoteService.commit_choice", return_value = False)
     @patch("apps.votes.services.SendVoteService.user_already_voted", return_value = False)
@@ -88,7 +88,7 @@ class SendVoteViewTest(TestCase):
         request = self.factory.post(
             "/votes/sendVote/",
             {"id": 1, "choice": "AGREE"},
-            content_type="application/json"
+            content_type = "application/json"
         )
         request.user = self.user
         view = SendVoteView.as_view()
@@ -99,6 +99,7 @@ class SendVoteViewTest(TestCase):
 
         mock_already.assert_called_once()
         mock_commit.assert_called_once()
+
 
 
 class PromotionPermissionViewTest(TestCase):
@@ -149,9 +150,15 @@ class BanPermissionViewTest(TestCase):
         self.user.role = "Mason"
 
 
+    @patch("apps.votes.views.PermissionService")
     @patch("apps.votes.views.HasValidToken.has_permission", return_value = True)
-    @patch("apps.votes.views.PermissionService.has_ban_permission", return_value = True)
-    def test_user_has_ban_permission(self, mock_service, _):
+    def test_user_has_ban_permission(self, mock_has_perm, mock_service):
+        mock_instance = mock_service.return_value
+        mock_instance.has_ban_permission.return_value = True
+        mock_instance.get_all_users_for_ban.return_value = [
+            {"user_id": 2, "username": "user2"}
+        ]
+
         request = self.factory.get("/votes/banPermission/")
         request.user = self.user
 
@@ -160,13 +167,16 @@ class BanPermissionViewTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["status"], "OK")
 
-        mock_service.assert_called_once()
+        mock_instance.has_ban_permission.assert_called_once()
+        mock_instance.get_all_users_for_ban.assert_called_once()
 
 
-
+    @patch("apps.votes.views.PermissionService")
     @patch("apps.votes.views.HasValidToken.has_permission", return_value = True)
-    @patch("apps.votes.views.PermissionService.has_ban_permission", return_value = False)
-    def test_user_has_not_ban_permission(self, mock_service, _):
+    def test_user_has_not_ban_permission(self, mock_has_perm, mock_service):
+        mock_instance = mock_service.return_value
+        mock_instance.has_ban_permission.return_value = False
+
         request = self.factory.get("/votes/banPermission/")
         request.user = self.user
 
@@ -174,8 +184,7 @@ class BanPermissionViewTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response.data["status"], "REFUSED")
-
-        mock_service.assert_called_once()
+        mock_instance.has_ban_permission.assert_called_once()
 
 
 
@@ -232,8 +241,8 @@ class UserBanViewTest(TestCase):
     def test_create_vote_for_ban(self, mock_service, _):
         request = self.factory.patch(
             "/votes/ban/",
-            {"id": 1, "username": "test1"},
-            content_type="application/json"
+            {"user_id": 1, "username": "test1"},
+            content_type = "application/json"
         )
         request.user = self.user
 
@@ -251,8 +260,8 @@ class UserBanViewTest(TestCase):
     def test_user_already_create_vote_for_ban(self, mock_service, _):
         request = self.factory.patch(
             "/votes/ban/",
-            {"id": 1, "username": "test1"},
-            content_type="application/json"
+            {"user_id": 1, "username": "test1"},
+            content_type = "application/json"
         )
         request.user = self.user
 
@@ -279,7 +288,7 @@ class CloseActiveExpiredVotesViewTest(TestCase):
         request = self.factory.patch(
             "/votes/vote_close/",
             {"date_of_end": "2025-10-31 19:05:20"},
-            content_type="application/json"
+            content_type = "application/json"
         )
         request.user = self.user
 
@@ -296,7 +305,7 @@ class CloseActiveExpiredVotesViewTest(TestCase):
         request = self.factory.patch(
             "/votes/vote_close/",
             {"date_of_end": "2025-10-31 19:05:20"},
-            content_type="application/json"
+            content_type = "application/json"
         )
         request.user = self.user
 
@@ -306,3 +315,85 @@ class CloseActiveExpiredVotesViewTest(TestCase):
         self.assertEqual(response.data["status"], "BAD_REQUEST")
 
         mock_service.assert_called_once()
+
+
+
+class InquisitorManagementViewTest(TestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+        self.user = MagicMock()
+        self.user.id = 1
+        self.user.role = "Mason"
+
+
+    @patch("apps.votes.views.InquisitorManagementService")
+    @patch("apps.votes.views.HasValidToken.has_permission", return_value = True)
+    def test_appoint_inquisitor_role_success(self, mock_has_perm, mock_service):
+        mock_instance = mock_service.return_value
+        mock_instance.appoint_inquisitor_role.return_value = True
+
+        request = self.factory.patch("/manage_inquisitor/")
+        request.user = self.user
+
+        response = InquisitorManagementView.as_view()(request)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "OK")
+        self.assertEqual(response.data["notification"], "The inquisitorial role was established")
+
+        mock_instance.appoint_inquisitor_role.assert_called_once()
+
+
+    @patch("apps.votes.views.InquisitorManagementService")
+    @patch("apps.votes.views.HasValidToken.has_permission", return_value = True)
+    def test_appoint_inquisitor_role_fail(self, mock_has_perm, mock_service):
+        mock_instance = mock_service.return_value
+        mock_instance.appoint_inquisitor_role.return_value = False
+
+        request = self.factory.patch("/manage_inquisitor/")
+        request.user = self.user
+
+        response = InquisitorManagementView.as_view()(request)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["status"], "BAD_REQUEST")
+        self.assertEqual(response.data["notification"], "Error to appoint inquisitor role")
+
+        mock_instance.appoint_inquisitor_role.assert_called_once()
+
+
+    @patch("apps.votes.views.InquisitorManagementService")
+    @patch("apps.votes.views.HasValidToken.has_permission", return_value = True)
+    def test_remove_inquisitor_role_success(self, mock_has_perm, mock_service):
+        mock_instance = mock_service.return_value
+        mock_instance.remove_inquisitor_role.return_value = True
+
+        request = self.factory.delete("/manage_inquisitor/")
+        request.user = self.user
+
+        response = InquisitorManagementView.as_view()(request)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "OK")
+        self.assertEqual(response.data["notification"], "The inquisitorial role was blocked")
+
+        mock_instance.remove_inquisitor_role.assert_called_once()
+
+
+    @patch("apps.votes.views.InquisitorManagementService")
+    @patch("apps.votes.views.HasValidToken.has_permission", return_value = True)
+    def test_remove_inquisitor_role_fail(self, mock_has_perm, mock_service):
+        mock_instance = mock_service.return_value
+        mock_instance.remove_inquisitor_role.return_value = False
+
+        request = self.factory.delete("/manage_inquisitor/")
+        request.user = self.user
+
+        response = InquisitorManagementView.as_view()(request)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data["status"], "BAD_REQUEST")
+        self.assertEqual(response.data["notification"], "Error to block inquisitor role")
+
+        mock_instance.remove_inquisitor_role.assert_called_once()
