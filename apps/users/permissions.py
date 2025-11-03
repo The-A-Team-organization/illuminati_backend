@@ -15,13 +15,11 @@ class IsGoldMason(BasePermission):
 
         try:
             token = auth_header.split(" ")[1]
-            payload = jwt.decode(
-                token, settings.SECRET_KEY, algorithms=["HS256"])
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
             user = User.objects.get(id=payload["id"])
 
             if user.role != Role.GOLD_MASON.value:
-                raise PermissionDenied(
-                    "Only GoldMasons can access this endpoint")
+                raise PermissionDenied("Only GoldMasons can access this endpoint")
 
             return True
 
@@ -38,15 +36,20 @@ class IsArchitect(BasePermission):
 
         try:
             token = auth_header.split(" ")[1]
-            payload = jwt.decode(
-                token, settings.SECRET_KEY, algorithms=["HS256"])
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
             user = User.objects.get(id=payload["id"])
 
             if user.role != Role.ARCHITECT.value:
-                raise PermissionDenied(
-                    "Only Architects can access this endpoint")
+                raise PermissionDenied("Only Architects can access this endpoint")
 
             return True
 
         except (jwt.DecodeError, jwt.ExpiredSignatureError, User.DoesNotExist):
             raise PermissionDenied("Invalid or expired token")
+
+
+class IsGoldMasonOrArchitect(BasePermission):
+    def has_permission(self, request, view):
+        return IsGoldMason().has_permission(
+            request, view
+        ) or IsArchitect().has_permission(request, view)

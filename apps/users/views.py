@@ -10,7 +10,7 @@ from .services import (
     get_all_emails,
     invite_user,
 )
-from .permissions import IsGoldMason, IsArchitect
+from .permissions import IsGoldMason, IsGoldMasonOrArchitect
 import requests
 import logging
 
@@ -71,7 +71,7 @@ class EmailView(APIView):
 
 
 class InviteView(APIView):
-    permission_classes = [IsGoldMason, IsArchitect]
+    permission_classes = [IsGoldMasonOrArchitect]
 
     def post(self, request):
         email = request.data.get("email")
