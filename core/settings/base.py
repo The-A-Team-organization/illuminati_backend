@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "apps.records",
     "apps.votes",
     "tests",
+    "apps.hall_of_fame",
 ]
 
 MIDDLEWARE = [
