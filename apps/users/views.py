@@ -12,6 +12,9 @@ from .services import (
 )
 from .permissions import IsGoldMason, IsArchitect
 import requests
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class UsersListView(APIView):
@@ -72,7 +75,6 @@ class InviteView(APIView):
 
     def post(self, request):
         email = request.data.get("email")
-
         if not email:
             return Response(
                 {"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST
@@ -83,9 +85,15 @@ class InviteView(APIView):
         if result["status"] == "success":
             payload = {
                 "topic": "Today's post: quick read",
-                "text": "Hello,\n\nToday's post is available at http://localhost:5173/. It's a short read you can open anytime. We'll deliver a single follow-up message to all subscribers later with a small update.\n\nThank you for subscribing.",
+                "text": (
+                    "Hello,\n\nToday's post is available at http://localhost:5173/. "
+                    "It's a short read you can open anytime. We'll deliver a single "
+                    "follow-up message to all subscribers later with a small update.\n\n"
+                    "Thank you for subscribing."
+                ),
                 "target_emails": [email],
             }
+
             try:
                 response = requests.post(
                     "http://docker_go:8080/send_letter",
@@ -93,9 +101,9 @@ class InviteView(APIView):
                     timeout=3,
                 )
                 if response.status_code != 200:
-                    print(f"Mailer error: {response.text}")
+                    logger.error(f"Mailer error: {response.text}")
             except Exception as e:
-                print(f"Failed to send mail via Go service: {e}")
+                logger.exception(f"Failed to send mail via Go service: {e}")
 
             return Response(
                 {"message": result["message"]}, status=status.HTTP_201_CREATED
