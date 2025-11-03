@@ -14,6 +14,7 @@ import os
 import uuid
 from django.conf import settings
 import jwt
+from apps.entry_password.services import save_new_entry_password
 import requests
 
 
@@ -245,7 +246,7 @@ class RecordEraseView(APIView):
             print(f"Image directory not found: {image_dir}")
 
         try:
-            requests.post("https://docker_go:8080/new-word", timeout=2)
+            save_new_entry_password()
         except Exception as e:
             print("Trigger failed:", e)
 
