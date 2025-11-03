@@ -1,4 +1,4 @@
-from django.db import connection, transaction
+from django.db import connection, transaction, OperationalError
 from .models import VoteTypes
 from datetime import datetime, timedelta, date
 from enums.rules import VoteRules, PromoteRules
@@ -25,6 +25,7 @@ class VoteService:
     def get_all_votes(self):
 
         vote_types = self.get_vote_role_raw(self.user.role)
+
         if not vote_types:
             return []
 
@@ -37,6 +38,7 @@ class VoteService:
                 ON v.id = vu.vote_id
                 AND vu.user_id = %s
                 WHERE (vu.id IS NULL OR vu.is_voted = FALSE)
+                AND v.is_active = TRUE
                 AND v.vote_type IN ({placeholders});
             """
 
@@ -45,16 +47,53 @@ class VoteService:
         with connection.cursor() as cursor:
             cursor.execute(query, params)
             rows = cursor.fetchall()
+            params.clear()
 
-        votes_dicts = [{
-            'id': v[0],
-            'name': v[1],
-            'vote_type': v[2]
-            }
-            for v in rows
-        ]
 
-        return votes_dicts
+        votes = []
+
+        for vote in rows:
+
+            user_roles = set()
+            for role in PromoteRules.new_rules.get(vote[2]):
+                user_roles.add(role)
+
+            placeholders = ','.join(['%s'] * len(user_roles))
+
+            query_total_count = f"""
+                                SELECT COUNT(u.id)
+                                FROM users u
+                                WHERE u.role in ({placeholders});
+                                """
+
+
+            with connection.cursor() as cursor:
+                cursor.execute(query_total_count, list(user_roles))
+                count_of_all_users = cursor.fetchall()
+
+            query_already_voted = f"""
+                        SELECT COUNT(*)
+                        FROM users u
+                        JOIN vote_users vu
+                        ON u.id = vu.user_id
+                        WHERE u.role in ({placeholders})
+                        AND vu.vote_id = %s;
+            """
+
+            params = list(user_roles) + [vote[0]]
+
+
+            with connection.cursor() as cursor:
+                cursor.execute(query_already_voted, params)
+                count_of_voting_users = cursor.fetchall()
+
+            votes.append({
+                'id': vote[0],
+                'name': vote[1],
+                'percent' : int((count_of_voting_users[0][0] / count_of_all_users[0][0]) * 100)
+            })
+
+        return votes
 
 
     @staticmethod
@@ -101,7 +140,7 @@ class VoteService:
             if v[3] == 'BAN_USER'
         ]
 
-        UserPromoteService.promote_user(list_of_users_to_promote, date.date())
+        UserPromoteService.promote_user(list_of_users_to_promote)
         UserBanService.ban_user(list_of_users_to_ban)
 
         return True
@@ -232,6 +271,38 @@ class PermissionService:
         return False
 
 
+    def get_all_users_for_ban(self):
+
+        query = """
+            SELECT u.id, u.username
+            FROM users u
+            WHERE u.id NOT IN (
+                SELECT user_in_question_id
+                FROM (
+                    SELECT v.user_in_question_id
+                    FROM votes v
+                    WHERE v.is_active = TRUE
+                    AND v.vote_type = 'BAN_USER'
+                ) AS tmp
+            );
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            rows = cursor.fetchall()
+
+        list_of_users_for_ban = [
+            {
+                "user_id" : u[0],
+                "username" : u[1]
+            }
+            for u in rows
+
+        ]
+
+        return list_of_users_for_ban
+
+
 
 class UserPromoteService:
 
@@ -265,7 +336,7 @@ class UserPromoteService:
 
 
     @staticmethod
-    def promote_user(values, date):
+    def promote_user(values):
 
         for value in values:
             count_of_agreed = value.get('count_of_agreed')
@@ -287,11 +358,14 @@ class UserPromoteService:
                     COMMIT;
                     """
 
+                date_of_end = datetime.now() + timedelta(days = 42)
+
                 new_user_role = PromoteRules.rules.get(value.get('vote_type')).value
-                params = [new_user_role, value.get('user_id'), date, value.get('user_id')]
+                params = [new_user_role, value.get('user_id'), date_of_end, value.get('user_id')]
 
                 with connection.cursor() as cursor:
                     cursor.execute(query, params)
+
         return True
 
 
@@ -335,19 +409,62 @@ class UserBanService:
                             INSERT INTO prohibited_ip(ip_address)
                             SELECT ip_address
                             FROM users_ip
-                            WHERE user_id = %s
+                            WHERE user_id = %s;
                             """,
                             [value.get('user_id')]
                         )
 
                         cursor.execute(
-                            "DELETE FROM users_ip WHERE user_id=%s",
-                            [value.get('user_id')]
-                        )
-
-                        cursor.execute(
-                            "DELETE FROM users WHERE id=%s",
+                            "DELETE FROM users WHERE id=%s;",
                             [value.get('user_id')]
                         )
 
         return True
+
+
+
+class InquisitorManagementService:
+
+    def appoint_inquisitor_role(self):
+        query = """
+            UPDATE users u
+            SET u.is_inquisitor = TRUE
+            WHERE u.id = (
+                SELECT id
+                FROM (
+                    SELECT id
+                    FROM users
+                    ORDER BY RAND()
+                    LIMIT 1
+                ) AS t
+            );
+        """
+
+        try:
+
+            with connection.cursor() as cursor:
+                cursor.execute(query)
+
+            return True
+
+        except OperationalError as e:
+            raise RuntimeError(f"Database problem connection or table lock: {e.args[0]}")
+
+
+    def remove_inquisitor_role(self):
+
+        query = """
+            UPDATE users u
+            SET u.is_inquisitor = FALSE
+            WHERE u.is_inquisitor = TRUE
+        """
+
+        try:
+
+            with connection.cursor() as cursor:
+                cursor.execute(query)
+
+            return True
+
+        except OperationalError as e:
+            raise RuntimeError(f"Database problem connection or table lock: {e.args[0]}")

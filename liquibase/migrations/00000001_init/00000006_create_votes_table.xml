@@ -32,11 +32,6 @@
             </column>
 
             <column name="vote_type" type="TEXT">
-<!--                PROMOTE_TO_SILVER : SilverMason-->
-<!--                PROMOTE_TO_GOLDEN : GoldMason-->
-<!--                PROMOTE_TO_ARCHITECT : Mason-->
-<!--                PROMOTE_TO_ARCHITECT : SilverMason-->
-<!--                PROMOTE_TO_ARCHITECT : GoldMason-->
                 <constraints nullable="false"/>
             </column>
         </createTable>
