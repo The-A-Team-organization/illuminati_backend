@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import ChangeEntryView
+from .views import EntryView
 
 urlpatterns = [
-    path('set/', ChangeEntryView.as_view(), name='set'),
+    path('new_entry_password/', EntryView.as_view(), name='entry_password'),
 ]

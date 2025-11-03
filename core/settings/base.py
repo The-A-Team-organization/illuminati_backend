@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "apps.authentific",
+    "apps.entry_password",
     "apps.users",
     "apps.snapshot",
     "apps.records",
