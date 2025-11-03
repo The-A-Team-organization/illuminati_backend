@@ -35,7 +35,7 @@ def get_record_by_id(record_id, user_id=None):
 
     if user_id is not None:
         exists = RecordActivityUser.objects.filter(
-            record=record_id, user_id=user_id, like_status=True
+            record_id=record_id, user_id=user_id, like_status=True
         ).exists()
         record.liked_by_user = exists
     else:
@@ -63,8 +63,7 @@ def like_record(user_id, record_id):
 
 
 def unlike_record(user_id, record_id):
-    RecordActivityUser.objects.filter(
-        user_id=user_id, record_id=record_id).delete()
+    RecordActivityUser.objects.filter(user_id=user_id, record_id=record_id).delete()
     likes_count = RecordActivityUser.objects.filter(
         record_id=record_id, like_status=True
     ).count()
