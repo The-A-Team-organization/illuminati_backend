@@ -2,19 +2,21 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from .permissions import HasValidToken
-from .services import VoteTableService,SendVoteService, PermissionService
-from .serializers import VotesSerializer, SendVotesSerializer
+from .services import VoteService,SendVoteService, PermissionService, UserPromoteService, UserBanService, \
+InquisitorManagementService
+from .serializers import VotesSerializer, SendVotesSerializer, CloseVotesSerializer, \
+UserBanSerializer
 
 
-class VotesTable(APIView):
+
+class VotesTableView(APIView):
     permission_classes = [HasValidToken]
 
     def get(self, request):
         user = request.user
-        votes = VoteTableService(user)
+        votes = VoteService(user)
 
-        serializer = VotesSerializer(votes.get_all_votes(), fields = ['id', 'name', 'vote_type'], many = True)
-
+        serializer = VotesSerializer(votes.get_all_votes(), many = True)
 
         return Response(
             {
@@ -26,7 +28,8 @@ class VotesTable(APIView):
         )
 
 
-class SendVote(APIView):
+
+class SendVoteView(APIView):
     permission_classes = [HasValidToken]
 
     def post(self, request):
@@ -66,7 +69,7 @@ class SendVote(APIView):
 
         return Response(
             {
-                "status": "HTTP_409_CONFLICT",
+                "status": "CONFLICT",
                 "notification": "Invalid request",
             },
             status=status.HTTP_409_CONFLICT
@@ -74,7 +77,7 @@ class SendVote(APIView):
 
 
 
-class PromotionPermission(APIView):
+class PromotionPermissionView(APIView):
     permission_classes = [HasValidToken]
 
     def get(self, request):
@@ -84,7 +87,8 @@ class PromotionPermission(APIView):
         if service.has_promote_permission():
             return Response(
                 {
-                    "status": "OK"
+                    "status": "OK",
+                    "notification": "User has permission to create promotion vote"
                 },
                 status = status.HTTP_200_OK
             )
@@ -92,13 +96,14 @@ class PromotionPermission(APIView):
         return Response(
             {
                 "status": "REFUSED",
+                "notification": "User role has not expired yet"
             },
             status = status.HTTP_403_FORBIDDEN
         )
 
 
 
-class BanPermission(APIView):
+class BanPermissionView(APIView):
     permission_classes = [HasValidToken]
 
     def get(self, request):
@@ -107,15 +112,160 @@ class BanPermission(APIView):
         service = PermissionService(user)
 
         if service.has_ban_permission():
+            serializer = UserBanSerializer(service.get_all_users_for_ban(), many = True)
+
             return Response(
                 {
-                    "status": "OK"
+                    "status": "OK",
+                    "notification": "User has permission to create ban vote",
+                    "data" : serializer.data
                 }
             )
 
         return Response(
             {
                 "status": "REFUSED",
+                "notification": "User has not inquisitor role"
             },
             status = status.HTTP_403_FORBIDDEN
+        )
+
+
+
+class UserPromoteView(APIView):
+    permission_classes = [HasValidToken]
+
+    def patch(self, request):
+        user = request.user
+
+        service = UserPromoteService(user)
+
+        if service.create_vote():
+            return Response(
+                {
+                    "status": "OK",
+                    "notification": "Vote for user promotion was created"
+                },
+                status = status.HTTP_200_OK
+            )
+
+        return Response(
+            {
+                "status": "BAD_REQUEST",
+                "notification": "User has already created vote for promotion"
+            },
+            status = status.HTTP_400_BAD_REQUEST
+        )
+
+
+
+class UserBanView(APIView):
+    permission_classes = [HasValidToken]
+
+    def patch(self, request):
+
+        serializer = UserBanSerializer(data = request.data)
+        serializer.is_valid(raise_exception = True)
+
+        service = UserBanService(**serializer.validated_data)
+
+        if service.create_vote():
+            return Response(
+                {
+                    "status" : "OK",
+                    "notification": "Vote for ban user was created"
+                },
+                status = status.HTTP_200_OK
+            )
+
+        return Response(
+            {
+                "status": "BAD_REQUEST",
+                "notification": "User has already created vote for ban selected user"
+            },
+            status = status.HTTP_400_BAD_REQUEST
+        )
+
+
+
+class CloseActiveExpiredVotesView(APIView):
+
+    def patch(self, request):
+
+        serializer = CloseVotesSerializer(data = request.data)
+        serializer.is_valid(raise_exception = True)
+
+        try:
+            if VoteService.close_votes(date = serializer.validated_data["date_of_end"]):
+                return Response(
+                    {
+                        "status": "OK",
+                        "notification": "All active votes was closed"
+                    },
+                    status=status.HTTP_200_OK
+                )
+
+            return Response(
+                {
+                    "status": "BAD_REQUEST",
+                    "notification": "Error to close votes"
+                },
+                status = status.HTTP_400_BAD_REQUEST
+            )
+
+        except ZeroDivisionError:
+            return Response(
+                {
+                    "status": "OK",
+                    "notification": "No users votes"
+                },
+                status=status.HTTP_200_OK
+            )
+
+
+
+class InquisitorManagementView(APIView):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.inquisitor_management_service = InquisitorManagementService()
+
+
+    def patch(self, request):
+
+        if self.inquisitor_management_service.appoint_inquisitor_role():
+            return Response(
+                {
+                    "status": "OK",
+                    "notification": "The inquisitorial role was established"
+                },
+                status = status.HTTP_200_OK
+            )
+
+        return Response(
+            {
+                "status": "BAD_REQUEST",
+                "notification": "Error to appoint inquisitor role"
+            },
+            status = status.HTTP_400_BAD_REQUEST
+        )
+
+
+    def delete(self, request):
+
+        if self.inquisitor_management_service.remove_inquisitor_role():
+            return Response(
+                {
+                    "status": "OK",
+                    "notification": "The inquisitorial role was blocked"
+                },
+                status = status.HTTP_200_OK
+            )
+
+        return Response(
+            {
+                "status": "BAD_REQUEST",
+                "notification": "Error to block inquisitor role"
+            },
+            status = status.HTTP_400_BAD_REQUEST
         )

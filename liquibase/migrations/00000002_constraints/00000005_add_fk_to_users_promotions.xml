@@ -5,33 +5,21 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.15.xsd">
 
-    <changeSet id="00000002_add_fk_to_vote_users" author="Taras Andreiko">
+    <changeSet id="00000005_add_fk_to_users_promotions" author="Taras Andreiko">
         <addForeignKeyConstraint
-            baseTableName="vote_users"
+            baseTableName="users_promotions"
             baseColumnNames="user_id"
             referencedTableName="users"
             referencedColumnNames="id"
             onDelete="CASCADE"
-            constraintName="fk_vote_users_user_id"
-        />
-
-        <addForeignKeyConstraint
-            baseTableName="vote_users"
-            baseColumnNames="vote_id"
-            referencedTableName="votes"
-            referencedColumnNames="id"
-            onDelete="CASCADE"
-            constraintName="fk_vote_users_vote_id"
+            constraintName="fk_users_promotions_user_id"
         />
 
         <rollback>
             <dropForeignKeyConstraint
                 baseTableName="vote_users"
-                constraintName="fk_vote_users_user_id"/>
-
-            <dropForeignKeyConstraint
-                baseTableName="vote_users"
-                constraintName="fk_vote_users_vote_id"/>
+                constraintName="fk_users_promotions_user_id"
+            />
 
         </rollback>
     </changeSet>
