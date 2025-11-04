@@ -66,15 +66,7 @@ Users have four access levels:
 We use vitest for testing our application.
 
 Test modules mirror the app structure:
-`
-tests/
- ├── authentific/
- ├── entry_password/
- ├── records/
- ├── snapshot/
- ├── users/
- └── votes/
-`
+<pre> ```text tests/ ├── authentific/ ├── entry_password/ ├── records/ ├── snapshot/ ├── users/ └── votes/ ``` </pre>
 
 Each test package includes: test_serializers.py, test_services.py, test_views.py
 
