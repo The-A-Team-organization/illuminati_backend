@@ -63,21 +63,9 @@ Users have four access levels:
 
 ## Testing
 
-We use vitest for testing our application.
-
-Test modules mirror the app structure:
-
-text tests/ 
-├── authentific/ 
-├── entry_password/ 
-├── records/ 
-├── snapshot/ 
-├── users/ 
-└── votes/
-
-Each test package includes: test_serializers.py, test_services.py, test_views.py
-
-Tests verify serialization, business logic and API response integrity.
+We use Vitest for automated tests. Test modules follow the application structure: `authentific`, `entry_password`, `records`, `snapshot`, `users`, and `votes`. 
+Each test package contains `test_serializers.py`, `test_services.py`, and `test_views.py`. 
+Tests cover serialization correctness, core business logic, and API response integrity.
 
 ## Security
 
