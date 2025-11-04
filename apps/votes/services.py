@@ -2,6 +2,7 @@ from django.db import connection, transaction, OperationalError
 from .models import VoteTypes
 from datetime import datetime, timedelta, date
 from enums.rules import VoteRules, PromoteRules
+from enums.roles import Role
 
 
 class VoteService:
@@ -225,7 +226,35 @@ class PermissionService:
         self.user = user
 
 
+    def architect_exists(self):
+        query = """
+                SELECT 1
+                WHERE EXISTS (
+                    SELECT * 
+                    FROM users u 
+                    WHERE u.role = %s
+                );
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [Role.ARCHITECT.value])
+            rows = cursor.fetchall()
+
+
+        if len(rows) == 1:
+            return True
+
+        return False
+
+
+
     def has_promote_permission(self):
+
+        if (self.user.role == Role.ARCHITECT.value or
+                (self.user.role == Role.GOLD_MASON.value and self.architect_exists())):
+            return False
+
+
         query = """
                 SELECT up.date_of_last_promotion, up.is_promote_requested
                 FROM users_promotions up
@@ -468,3 +497,48 @@ class InquisitorManagementService:
 
         except OperationalError as e:
             raise RuntimeError(f"Database problem connection or table lock: {e.args[0]}")
+
+
+
+class UserArchitectService:
+
+    def add_to_hall_of_fame(self, user_id, username, email):
+        query = """
+                INSERT INTO hall_of_fame(username, email)
+                VALUES (%s, %s);
+                    
+                DELETE FROM users WHERE id = %s;
+        """
+
+        params = [username, email, user_id]
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+
+
+    def delete_architect(self):
+        query = """
+            SELECT u.id, u.username, u.email, up.date_of_last_promotion
+            FROM users_promotions up
+            JOIN users u ON up.user_id = u.id
+            WHERE u.role = %s
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query, [Role.ARCHITECT.value])
+            rows = cursor.fetchall()
+
+
+        if len(rows) > 0:
+            user_id = rows[0][0]
+            username = rows[0][1]
+            email = rows[0][2]
+            expired_date = rows[0][3] + timedelta(days = 42)
+
+            if expired_date < datetime.now().date():
+                self.add_to_hall_of_fame(user_id, username, email)
+                return True
+
+            return False
+
+        return False
