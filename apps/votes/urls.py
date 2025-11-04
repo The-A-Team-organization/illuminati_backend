@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import VotesTableView, SendVoteView, PromotionPermissionView, BanPermissionView,\
-UserPromoteView, CloseActiveExpiredVotesView, UserBanView, InquisitorManagementView
+UserPromoteView, CloseActiveExpiredVotesView, UserBanView, InquisitorManagementView, \
+UserArchitectView
 
 urlpatterns = [
     path('getVotes/', VotesTableView.as_view(), name = 'votes-list'),
@@ -10,5 +11,6 @@ urlpatterns = [
     path('promote/', UserPromoteView.as_view(), name = 'promote'),
     path('ban/', UserBanView.as_view(), name = 'ban-service'),
     path('vote_close/', CloseActiveExpiredVotesView.as_view(), name = 'vote_close'),
-    path('manage_inquisitor/', InquisitorManagementView.as_view(), name = 'manage-inquisitor')
+    path('manage_inquisitor/', InquisitorManagementView.as_view(), name = 'manage-inquisitor'),
+    path('ban_architect/', UserArchitectView.as_view(), name = 'ban-architect')
 ]

@@ -1,7 +1,7 @@
 from unittest.mock import patch, MagicMock
 from django.test import TestCase
 from apps.votes.services import SendVoteService, VoteService, PermissionService, \
-     UserPromoteService, UserBanService, InquisitorManagementService
+    UserPromoteService, UserBanService, InquisitorManagementService, UserArchitectService
 from datetime import date, datetime, timedelta
 from enums.roles import Role
 from enums.rules import VoteRules
@@ -383,4 +383,72 @@ class PermissionServiceGetAllUsersForBanTest(TestCase):
         result = self.service.get_all_users_for_ban()
 
         self.assertEqual(result, [])
+        mock_cursor_instance.execute.assert_called_once()
+
+
+
+class UserArchitectServiceTest(TestCase):
+
+    def setUp(self):
+        self.service = UserArchitectService()
+
+
+    @patch("apps.votes.services.connection.cursor")
+    def test_add_to_hall_of_fame_success(self, mock_cursor):
+        mock_cursor_instance = MagicMock()
+        mock_cursor.return_value.__enter__.return_value = mock_cursor_instance
+
+        self.service.add_to_hall_of_fame(1, "user1", "user1@email.com")
+
+        mock_cursor_instance.execute.assert_called_once()
+        args, _ = mock_cursor_instance.execute.call_args
+
+        self.assertIn("INSERT INTO hall_of_fame", args[0])
+        self.assertEqual(args[1], ["user1", "user1@email.com", 1])
+
+
+    @patch.object(UserArchitectService, "add_to_hall_of_fame")
+    @patch("apps.votes.services.connection.cursor")
+    def test_delete_architect_expired(self, mock_cursor, mock_add_to_hall):
+        mock_cursor_instance = MagicMock()
+        mock_cursor.return_value.__enter__.return_value = mock_cursor_instance
+
+        mock_cursor_instance.fetchall.return_value = [
+            (1, "arch1", "arch1@mail.com", datetime.now().date() - timedelta(days = 50))
+        ]
+
+        result = self.service.delete_architect()
+
+        self.assertTrue(result)
+        mock_add_to_hall.assert_called_once_with(1, "arch1", "arch1@mail.com")
+
+
+    @patch.object(UserArchitectService, "add_to_hall_of_fame")
+    @patch("apps.votes.services.connection.cursor")
+    def test_delete_architect_not_expired(self, mock_cursor, mock_add_to_hall):
+        mock_cursor_instance = MagicMock()
+        mock_cursor.return_value.__enter__.return_value = mock_cursor_instance
+
+        mock_cursor_instance.fetchall.return_value = [
+            (1, "arch2", "arch2@mail.com", datetime.now().date() - timedelta(days = 10))
+        ]
+
+        result = self.service.delete_architect()
+
+        self.assertFalse(result)
+        mock_add_to_hall.assert_not_called()
+
+
+    @patch.object(UserArchitectService, "add_to_hall_of_fame")
+    @patch("apps.votes.services.connection.cursor")
+    def test_delete_architect_no_rows(self, mock_cursor, mock_add_to_hall):
+        mock_cursor_instance = MagicMock()
+        mock_cursor.return_value.__enter__.return_value = mock_cursor_instance
+        mock_cursor_instance.fetchall.return_value = []
+
+        result = self.service.delete_architect()
+
+        self.assertFalse(result)
+
+        mock_add_to_hall.assert_not_called()
         mock_cursor_instance.execute.assert_called_once()

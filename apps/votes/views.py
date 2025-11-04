@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from .permissions import HasValidToken
 from .services import VoteService,SendVoteService, PermissionService, UserPromoteService, UserBanService, \
-InquisitorManagementService
+InquisitorManagementService, UserArchitectService
 from .serializers import VotesSerializer, SendVotesSerializer, CloseVotesSerializer, \
 UserBanSerializer
 
@@ -266,6 +266,31 @@ class InquisitorManagementView(APIView):
             {
                 "status": "BAD_REQUEST",
                 "notification": "Error to block inquisitor role"
+            },
+            status = status.HTTP_400_BAD_REQUEST
+        )
+
+
+
+class UserArchitectView(APIView):
+
+    def delete(self, request):
+
+        service = UserArchitectService()
+
+        if service.delete_architect():
+            return Response(
+                {
+                    "status": "OK",
+                    "notification": "User with architect role was deleted"
+                },
+                status = status.HTTP_200_OK
+            )
+
+        return Response(
+            {
+                "status": "BAD_REQUEST",
+                "notification" : "There is no architect or date has not expired yet"
             },
             status = status.HTTP_400_BAD_REQUEST
         )
