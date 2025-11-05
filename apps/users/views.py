@@ -142,7 +142,7 @@ class BroadcastView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        valid_roles = {"Architect", "GoldMason", "SilverMason", "Mason"}
+        valid_roles = {"GoldMason", "SilverMason", "Mason"}
         selected_roles = [t for t in tiers if t in valid_roles]
 
         if not selected_roles:
