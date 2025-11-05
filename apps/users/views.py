@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import UserSerializer
+from .models import User
 from .services import (
     get_all_users,
     get_user_by_id,
@@ -10,7 +11,7 @@ from .services import (
     get_all_emails,
     invite_user,
 )
-from .permissions import IsGoldMason, IsGoldMasonOrArchitect
+from .permissions import IsGoldMason, IsGoldMasonOrArchitect, IsArchitect
 import requests
 import logging
 
@@ -116,4 +117,75 @@ class InviteView(APIView):
 
         return Response(
             {"error": result["message"]}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+class BroadcastView(APIView):
+    permission_classes = [IsArchitect]
+
+    def post(self, request):
+        tiers = request.data.get("tiers", [])
+        topic = request.data.get("topic")
+        text = request.data.get("text")
+
+        if not tiers or not isinstance(tiers, list):
+            return Response(
+                {
+                    "error": "You must specify one or more tiers (e.g. ['GoldMason', 'Mason'])"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not topic or not text:
+            return Response(
+                {"error": "Both 'topic' and 'text' are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        valid_roles = {"Architect", "GoldMason", "SilverMason", "Mason"}
+        selected_roles = [t for t in tiers if t in valid_roles]
+
+        if not selected_roles:
+            return Response(
+                {"error": "No valid tiers selected"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        target_users = User.objects.filter(role__in=selected_roles)
+        if not target_users.exists():
+            return Response(
+                {"error": "No users found for the selected tiers"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        target_emails = list(target_users.values_list("email", flat=True))
+
+        payload = {
+            "topic": topic,
+            "text": text,
+            "target_emails": target_emails,
+        }
+
+        try:
+            response = requests.post(
+                "http://docker_go:8080/send_letter",
+                json=payload,
+                timeout=5,
+            )
+            if response.status_code != 200:
+                logger.error(f"Mailer error: {response.text}")
+
+        except Exception as e:
+            logger.exception(f"Failed to send broadcast via Go service: {e}")
+            return Response(
+                {"error": "Broadcast delivery failed"},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        return Response(
+            {
+                "status": "success",
+                "notification": f"Broadcast sent to {len(target_emails)} users.",
+            },
+            status=status.HTTP_200_OK,
         )
