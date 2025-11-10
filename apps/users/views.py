@@ -18,7 +18,8 @@ import os
 
 logger = logging.getLogger(__name__)
 
-GO_SERVICE_URL = os.getenv("GO_SERVICE_URL", "http://docker_go:8080/send_letter")
+GO_SERVICE_URL = os.getenv("GO_SERVICE_URL", "http://docker_go:8080")
+BROADCAST_ENDPOINT = os.getenv("BROADCAST_ENDPOINT", "/send_letter")
 
 class UsersListView(APIView):
     permission_classes = [IsGoldMason]
@@ -170,7 +171,7 @@ class BroadcastView(APIView):
 
         try:
             response = requests.post(
-                GO_SERVICE_URL,
+                 f"{GO_SERVICE_URL}{BROADCAST_ENDPOINT}",
                 json=payload,
                 timeout=5,
             )
